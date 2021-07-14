@@ -36,9 +36,9 @@ module.exports.getStatusByAuthorId = (includeAuthorInfo, page, perPage) => {
       { "$project": {
           author: { "$arrayElemAt": [ "$author", 0 ] },
           authorId: {$toString: "$_id"},
-          averagePageCount: "$averagePageCount",
-          numBooks: "$numBooks",
-          titles: "$titles",
+          averagePageCount: 1,
+          numBooks: 1,
+          titles: 1,
           _id: 0
       } }
     ]).limit(perPage).skip(perPage*page);
@@ -54,9 +54,9 @@ module.exports.getStatusByAuthorId = (includeAuthorInfo, page, perPage) => {
       } },
       { $project: {
               authorId: "$_id",
-              averagePageCount: "$averagePageCount",
-              numBooks: "$numBooks",
-              titles: "$titles",
+              averagePageCount: 1,
+              numBooks: 1,
+              titles: 1,
               _id: 0
       } }
     ]).limit(perPage).skip(perPage*page);
