@@ -4,8 +4,12 @@ const Book = require('../models/book');
 
 module.exports = {};
 
-module.exports.getAll = (page, perPage) => {
-  return Book.find().limit(perPage).skip(perPage*page).lean();
+module.exports.getAll = (page, perPage, authorId) => {
+  if (authorId) {
+    return Book.find({ authorId: authorId }).limit(perPage).skip(perPage*page).lean();
+  } else {
+    return Book.find().limit(perPage).skip(perPage*page).lean();
+  }
 }
 
 module.exports.getById = (bookId) => {
@@ -40,6 +44,48 @@ module.exports.create = async (bookData) => {
       throw new BadDataError(e.message);
     }
     throw e;
+  }
+}
+
+module.exports.search = (page, perPage, query) => {
+  if (query) {
+    return Book.find({ $text: { $search: query } }, { score: { $meta: 'textScore' }}).sort({ score: { $meta: 'textScore'}}).limit(perPage).skip(perPage*page).lean();
+  } else {
+    return Book.find().limit(perPage).skip(perPage*page).lean();
+  }
+}
+
+module.exports.authorStats = (page, perPage, authorInfo) => {
+  if (authorInfo === 'true') {
+    return Book.aggregate([
+      { $lookup: {
+        from: 'authors',
+        localField: 'authorId',
+        foreignField: '_id',
+        as: 'author'
+      }},
+      { $unwind: '$author'},
+      { $group: {
+        _id: '$authorId',
+        author: { $first: '$author' },
+        authorId: { $first: '$authorId' },
+        averagePageCount: { $avg: '$pageCount' },
+        numBooks: { $sum: 1 },
+        titles: { $push: '$title' }
+      }},
+      { $project : { _id: 0 }}
+    ]).limit(perPage).skip(perPage*page);
+  } else {
+    return Book.aggregate([
+      { $group: {
+        _id: '$authorId',
+        authorId: { $first: '$authorId' },
+        averagePageCount: { $avg: '$pageCount' },
+        numBooks: { $sum: 1 },
+        titles: { $push: '$title' }
+      }},
+      { $project : { _id: 0 }}
+    ]).limit(perPage).skip(perPage*page);
   }
 }
 
