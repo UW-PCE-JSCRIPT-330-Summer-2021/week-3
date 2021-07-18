@@ -57,9 +57,17 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// router.get("/authors/stats", async (req, res, next) => {
-
-// });
+router.get("/authors/stats", async (req, res, next) => {
+  try {
+    let { page, perPage, authorData } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const books = await bookDAO.authorStats(page, perPage, authorData);
+    res.json(books);
+    } catch (e) {
+      next (e)
+    }
+});
 
 // Update
 router.put("/:id", async (req, res, next) => {

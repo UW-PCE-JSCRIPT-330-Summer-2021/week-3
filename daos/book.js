@@ -24,9 +24,17 @@ module.exports.search = (page, perPage, query) => {
   }
 }
 
-// module.exports.authorStats = (page, perPage) => {
-
-// }
+module.exports.authorStats = (page, perPage, authorData) => {
+  // if (authorData) {
+  //   return Book.find(
+  //     { $text: { $search: authorData }},
+  //     { score: { $meta: 'textScore' }})
+  //     .sort({ score: { $meta: 'textScore' }})
+  //     .limit(perPage).skip(perPage*page).lean();
+  // } else {
+  //   return Book.find().limit(perPage).skip(perPage*page).lean();
+  // }
+}
 
 module.exports.getById = (bookId) => {
   if (!mongoose.Types.ObjectId.isValid(bookId)) {
