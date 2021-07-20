@@ -5,35 +5,73 @@ const Book = require('../models/book');
 module.exports = {};
 
 module.exports.getAll = (page, perPage, authorId) => {
-  if (authorId) {
-    return Book.find({ authorId: authorId }).limit(perPage).skip(perPage*page).lean();
-  } else {
-    return Book.find().limit(perPage).skip(perPage*page).lean();
+  try {
+    if (authorId) {
+      return Book.find({ authorId: authorId }).limit(perPage).skip(perPage*page).lean();
+    } else {
+      return Book.find().limit(perPage).skip(perPage*page).lean();
+    }
+  } catch (e) {
+    throw e;
   }
 }
 
 module.exports.search = (page, perPage, query) => {
-  if (query) {
-    return Book.find(
-      { $text: { $search: query }},
-      { score: { $meta: 'textScore' }})
-      .sort({ score: { $meta: 'textScore' }})
-      .limit(perPage).skip(perPage*page).lean();
-  } else {
-    return Book.find().limit(perPage).skip(perPage*page).lean();
+  try {
+    if (query) {
+      return Book.find(
+        { $text: { $search: query }},
+        { score: { $meta: 'textScore' }})
+        .sort({ score: { $meta: 'textScore' }})
+        .limit(perPage).skip(perPage*page).lean();
+    } else {
+      return Book.find().limit(perPage).skip(perPage*page).lean();
+    }
+  } catch (e) {
+    throw e;
   }
 }
 
-module.exports.authorStats = (page, perPage, authorData) => {
-  // if (authorData) {
-  //   return Book.find(
-  //     { $text: { $search: authorData }},
-  //     { score: { $meta: 'textScore' }})
-  //     .sort({ score: { $meta: 'textScore' }})
-  //     .limit(perPage).skip(perPage*page).lean();
-  // } else {
-  //   return Book.find().limit(perPage).skip(perPage*page).lean();
-  // }
+module.exports.authorStats = (page, perPage, authorInfo) => {
+  try {
+    if (authorInfo) {
+      return Book.aggregate([
+        { $lookup: {
+          from: 'authors',
+          localField: 'authorId',
+          foreignField: '_id',
+          as: 'author'
+        }},
+        { $unwind: '$author' },
+        { $group: {
+          _id: '$authorId',
+          authorId: { $first: '$authorId'},
+          averagePageCount: { $avg: '$pageCount' },
+          numBooks: { $sum: 1 },
+          titles: { $push: '$title' },
+          author: { $first: '$author'},
+        }},
+        { $project: {
+           _id: 0 
+        }}
+      ])
+    } else {
+      return Book.aggregate([
+        { $group: {
+          _id: '$authorId',
+          authorId: { $first: '$authorId'},
+          averagePageCount: { $avg: '$pageCount' },
+          numBooks: { $sum: 1 },
+          titles: { $push: '$title' }
+        }},
+        { $project: { 
+          _id: 0 
+        }}
+      ])
+    } 
+  } catch (e) {
+    throw e;
+  }
 }
 
 module.exports.getById = (bookId) => {
@@ -44,19 +82,27 @@ module.exports.getById = (bookId) => {
 }
 
 module.exports.deleteById = async (bookId) => {
-  if (!mongoose.Types.ObjectId.isValid(bookId)) {
-    return false;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return false;
+    }
+    await Book.deleteOne({ _id: bookId });
+    return true;
+  } catch (e) {
+    throw e;
   }
-  await Book.deleteOne({ _id: bookId });
-  return true;
 }
 
 module.exports.updateById = async (bookId, newObj) => {
-  if (!mongoose.Types.ObjectId.isValid(bookId)) {
-    return false;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return false;
+    }
+    await Book.updateOne({ _id: bookId }, newObj);
+    return true;
+  } catch (e) {
+    throw e;
   }
-  await Book.updateOne({ _id: bookId }, newObj);
-  return true;
 }
 
 module.exports.create = async (bookData) => {
