@@ -4,8 +4,72 @@ const Book = require('../models/book');
 
 module.exports = {};
 
-module.exports.getAll = (page, perPage) => {
-  return Book.find().limit(perPage).skip(perPage*page).lean();
+module.exports.getAll = (page, perPage, authorId) => {
+  try {
+    if (authorId) {
+      return Book.find({ authorId: authorId }).limit(perPage).skip(perPage*page).lean();
+    } else {
+      return Book.find().limit(perPage).skip(perPage*page).lean();
+    }
+  } catch (e) {
+    throw e;
+  }
+}
+
+module.exports.search = (page, perPage, query) => {
+  try {
+    return Book.find(
+      { $text: { $search: query }},
+      { score: { $meta: 'textScore' }})
+      .sort({ score: { $meta: 'textScore' }})
+      .limit(perPage).skip(perPage*page).lean();
+  } catch (e) {
+    throw e;
+  }
+}
+
+module.exports.authorStats = (authorInfo) => {
+  try {
+    if (authorInfo) {
+      return Book.aggregate([
+        { $group: {
+          _id: '$authorId',
+          authorId: { $first: '$authorId'},
+          averagePageCount: { $avg: '$pageCount' },
+          numBooks: { $sum: 1 },
+          titles: { $push: '$title' },
+          author: { $first: '$author'},
+        }},
+        { $project: {
+           _id: 0 
+        }},
+        { $lookup: {
+          from: 'authors',
+          localField: 'authorId',
+          foreignField: '_id',
+          as: 'author'
+        }},
+        { $unwind: '$author' },
+        { $sort: { 'authorId': 1 } }
+      ])
+    } else {
+      return Book.aggregate([
+        { $group: {
+          _id: '$authorId',
+          authorId: { $first: '$authorId'},
+          averagePageCount: { $avg: '$pageCount' },
+          numBooks: { $sum: 1 },
+          titles: { $push: '$title' }
+        }},
+        { $project: { 
+          _id: 0 
+        }},
+        { $sort: { 'authorId': 1 } }
+      ])
+    } 
+  } catch (e) {
+    throw e;
+  }
 }
 
 module.exports.getById = (bookId) => {
@@ -16,19 +80,27 @@ module.exports.getById = (bookId) => {
 }
 
 module.exports.deleteById = async (bookId) => {
-  if (!mongoose.Types.ObjectId.isValid(bookId)) {
-    return false;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return false;
+    }
+    await Book.deleteOne({ _id: bookId });
+    return true;
+  } catch (e) {
+    throw e;
   }
-  await Book.deleteOne({ _id: bookId });
-  return true;
 }
 
 module.exports.updateById = async (bookId, newObj) => {
-  if (!mongoose.Types.ObjectId.isValid(bookId)) {
-    return false;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return false;
+    }
+    await Book.updateOne({ _id: bookId }, newObj);
+    return true;
+  } catch (e) {
+    throw e;
   }
-  await Book.updateOne({ _id: bookId }, newObj);
-  return true;
 }
 
 module.exports.create = async (bookData) => {
@@ -36,7 +108,7 @@ module.exports.create = async (bookData) => {
     const created = await Book.create(bookData);
     return created;
   } catch (e) {
-    if (e.message.includes('validation failed')) {
+    if (e.message.includes('validation failed') || ('E11000 duplicate key error')) {
       throw new BadDataError(e.message);
     }
     throw e;
