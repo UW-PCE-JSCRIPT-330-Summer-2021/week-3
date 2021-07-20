@@ -31,7 +31,7 @@ module.exports.search = (page, perPage, query) => {
 }
 
 module.exports.getStats = (authorInfo, page, perPage) => {
-  if (authorInfo === 'true') {
+  if (authorInfo) {
     return Book.aggregate([
       { $lookup: {
         from: 'authors',

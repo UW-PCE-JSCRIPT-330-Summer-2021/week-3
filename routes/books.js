@@ -67,6 +67,7 @@ router.get("/authors/stats", async (req, res, next) => {
     const stats = await bookDAO.getStats(authorInfo, page, perPage);
     res.json(stats);
   } catch (e) {
+    res.status(404).send('author ID required');
     next(e)
   }
 })
