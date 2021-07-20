@@ -5,15 +5,18 @@ const Author = require('../models/author');
 module.exports = {};
 
 module.exports.getAll = (page, perPage) => {
-  return Author.find().limit(perPage).skip(perPage*page).lean();
-}
+  return Author.find()
+    .limit(perPage)
+    .skip(perPage * page)
+    .lean();
+};
 
 module.exports.getById = (authorId) => {
   if (!mongoose.Types.ObjectId.isValid(authorId)) {
     return null;
   }
   return Author.findOne({ _id: authorId }).lean();
-}
+};
 
 module.exports.deleteById = async (authorId) => {
   if (!mongoose.Types.ObjectId.isValid(authorId)) {
@@ -21,7 +24,7 @@ module.exports.deleteById = async (authorId) => {
   }
   await Author.deleteOne({ _id: authorId });
   return true;
-}
+};
 
 module.exports.updateById = async (authorId, newObj) => {
   if (!mongoose.Types.ObjectId.isValid(authorId)) {
@@ -29,7 +32,7 @@ module.exports.updateById = async (authorId, newObj) => {
   }
   await Author.updateOne({ _id: authorId }, newObj);
   return true;
-}
+};
 
 module.exports.create = async (authorData) => {
   try {
@@ -41,7 +44,7 @@ module.exports.create = async (authorData) => {
     }
     throw e;
   }
-}
+};
 
-class BadDataError extends Error {};
+class BadDataError extends Error {}
 module.exports.BadDataError = BadDataError;
