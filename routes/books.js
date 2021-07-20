@@ -15,8 +15,10 @@ router.post("/", async (req, res, next) => {
     } catch(e) {
       if (e instanceof bookDAO.BadDataError) {
         res.status(400).send(e.message);
+        next (e);
       } else {
         res.status(500).send(e.message);
+        next (e);
       }
     }
   }
@@ -37,11 +39,15 @@ router.get("/search", async (req, res, next) => {
 
 // Read - single book
 router.get("/:id", async (req, res, next) => {
-  const book = await bookDAO.getById(req.params.id);
-  if (book) {
-    res.json(book);
-  } else {
-    res.sendStatus(404);
+  try {
+    const book = await bookDAO.getById(req.params.id);
+    if (book) {
+      res.json(book);
+    } else {
+      res.sendStatus(404);
+    }
+  } catch (e) {
+    next(e)
   }
 });
 

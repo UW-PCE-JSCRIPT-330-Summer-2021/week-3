@@ -39,7 +39,6 @@ module.exports.getStats = (authorInfo, page, perPage) => {
         foreignField: '_id',
         as: 'author'
       }},
-      { $unwind: '$author'},
       { $group: {
         author: { $first: '$author' },
         _id: '$authorId',
@@ -50,7 +49,9 @@ module.exports.getStats = (authorInfo, page, perPage) => {
       }},
       { $project : { 
         _id: 0 
-      }}
+      }},
+      { $unwind: '$author'},
+      { $sort: { titles: 1 } }
     ]).limit(perPage).skip(perPage*page);
   } else {
     return Book.aggregate([
@@ -63,7 +64,8 @@ module.exports.getStats = (authorInfo, page, perPage) => {
       }},
       { $project : { 
         _id: 0 
-      }}
+      }},
+      { $sort: { titles: 1 } }
     ]).limit(perPage).skip(perPage*page);
   }
 }
@@ -89,7 +91,7 @@ module.exports.create = async (bookData) => {
     const created = await Book.create(bookData);
     return created;
   } catch (e) {
-    if (e.message.includes('validation failed') || e.message.includes('duplicate')) {
+    if (e.message.includes('validation failed') || e.message.includes('E11000 duplicate key error ')) {
       throw new BadDataError(e.message);
     }
     throw e;
