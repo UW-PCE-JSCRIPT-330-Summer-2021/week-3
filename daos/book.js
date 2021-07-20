@@ -18,31 +18,20 @@ module.exports.getAll = (page, perPage, authorId) => {
 
 module.exports.search = (page, perPage, query) => {
   try {
-    if (query) {
-      return Book.find(
-        { $text: { $search: query }},
-        { score: { $meta: 'textScore' }})
-        .sort({ score: { $meta: 'textScore' }})
-        .limit(perPage).skip(perPage*page).lean();
-    } else {
-      return Book.find().limit(perPage).skip(perPage*page).lean();
-    }
+    return Book.find(
+      { $text: { $search: query }},
+      { score: { $meta: 'textScore' }})
+      .sort({ score: { $meta: 'textScore' }})
+      .limit(perPage).skip(perPage*page).lean();
   } catch (e) {
     throw e;
   }
 }
 
-module.exports.authorStats = (page, perPage, authorInfo) => {
+module.exports.authorStats = (authorInfo) => {
   try {
     if (authorInfo) {
       return Book.aggregate([
-        { $lookup: {
-          from: 'authors',
-          localField: 'authorId',
-          foreignField: '_id',
-          as: 'author'
-        }},
-        { $unwind: '$author' },
         { $group: {
           _id: '$authorId',
           authorId: { $first: '$authorId'},
@@ -53,7 +42,15 @@ module.exports.authorStats = (page, perPage, authorInfo) => {
         }},
         { $project: {
            _id: 0 
-        }}
+        }},
+        { $lookup: {
+          from: 'authors',
+          localField: 'authorId',
+          foreignField: '_id',
+          as: 'author'
+        }},
+        { $unwind: '$author' },
+        { $sort: { 'authorId': 1 } }
       ])
     } else {
       return Book.aggregate([
@@ -66,7 +63,8 @@ module.exports.authorStats = (page, perPage, authorInfo) => {
         }},
         { $project: { 
           _id: 0 
-        }}
+        }},
+        { $sort: { 'authorId': 1 } }
       ])
     } 
   } catch (e) {
