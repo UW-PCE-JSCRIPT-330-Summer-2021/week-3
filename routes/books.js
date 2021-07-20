@@ -60,7 +60,7 @@ router.get("/authors/stats", async (req, res, next) => {
     let { page, perPage, authorStat } = req.query;
     page = page ? Number(page) : 0;
     perPage = perPage ? Number(perPage) : 10;
-    const authorStat = await bookDAO.getByAuthorStat(page, perPage, authorStat);
+    const authorStats = await bookDAO.getByAuthorStat(page, perPage, authorStat);
     res.json(authorStat);
   } catch (e) {
     next(e);
