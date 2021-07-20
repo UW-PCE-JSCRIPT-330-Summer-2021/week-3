@@ -24,7 +24,7 @@ module.exports.getAll = (page, perPage, authorId) => {
 } */
 
 //Similar to the Week 3's in class code along exercise
-model.exports.getByQuery = (page, perPage, query) => {
+module.exports.getByQuery = (page, perPage, query) => {
   if (query) {
     return Book.find(
       { $text: { $search: query } },
