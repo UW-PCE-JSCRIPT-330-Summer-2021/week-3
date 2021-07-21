@@ -123,6 +123,7 @@ describe("/books", () => {
       book._id = savedBooks[index]._id.toString();
     });
   });
+
   afterEach(testUtils.clearDB);
 
   describe("GET /", () => {
