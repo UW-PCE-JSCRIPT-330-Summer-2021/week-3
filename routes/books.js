@@ -2,6 +2,7 @@ const { Router } = require("express");
 const router = Router();
 
 const bookDAO = require('../daos/book');
+const book = require('../models/book');
 
 // Create
 router.post("/", async (req, res, next) => {
@@ -15,13 +16,39 @@ router.post("/", async (req, res, next) => {
     } catch(e) {
       if (e instanceof bookDAO.BadDataError) {
         res.status(400).send(e.message);
+        next (e);
       } else {
         res.status(500).send(e.message);
+        next (e);
       }
     }
   }
 });
+router.get('/search', async (req, res, next) => {
+	try {
+		let { page, perPage, query } = req.query;
+		page = page ? Number(page) : 0;
+		perPage = perPage ? Number(perPage) : 10;
+		const searchResult = await bookDAO.search(page, perPage, query);
+		res.json(searchResult);
+	} catch (e) {
+		next(e);
+	}
+});
 
+// /stats
+router.get('/authors/stats', async (req, res, next) => {
+	try {
+		let { page, perPage, authorInfo } = req.query;
+		page = page ? Number(page) : 0;
+		perPage = perPage ? Number(perPage) : 10;
+		const stats = await bookDAO.getStats(authorInfo, page, perPage);
+		res.json(stats);
+	} catch (e) {
+    res.status(404).send('author ID required');
+		next(e);
+	}
+});
 // Read - single book
 router.get("/:id", async (req, res, next) => {
   const book = await bookDAO.getById(req.params.id);
@@ -33,12 +60,16 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Read - all books
-router.get("/", async (req, res, next) => {
-  let { page, perPage } = req.query;
-  page = page ? Number(page) : 0;
-  perPage = perPage ? Number(perPage) : 10;
-  const books = await bookDAO.getAll(page, perPage);
-  res.json(books);
+router.get('/', async (req, res, next) => {
+	try {
+		let { page, perPage, authorId } = req.query;
+		page = page ? Number(page) : 0;
+		perPage = perPage ? Number(perPage) : 10;
+		const books = await bookDAO.getAll(page, perPage, authorId);
+		res.json(books);
+	} catch (e) {
+		next(e);
+	}
 });
 
 // Update
