@@ -2,6 +2,7 @@ const { Router } = require("express");
 const router = Router();
 
 const bookDAO = require('../daos/book');
+const bookMODEL = require('../models/book');
 
 // Create
 router.post("/", async (req, res, next) => {
@@ -34,11 +35,15 @@ router.get("/:id", async (req, res, next) => {
 
 // Read - all books
 router.get("/", async (req, res, next) => {
-  let { page, perPage } = req.query;
-  page = page ? Number(page) : 0;
-  perPage = perPage ? Number(perPage) : 10;
-  const books = await bookDAO.getAll(page, perPage);
-  res.json(books);
+  try {
+    let { page, perPage, authorId } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const books = await bookDAO.getAll(page, perPage, authorId);
+    res.json(books);
+  } catch (e) {
+    next(e);
+  }
 });
 
 //Query
@@ -47,7 +52,7 @@ router.get("/query", async (req, res, next) => {
     let { page, perPage, query } = req.query;
     page = page ? Number(page) : 0;
     perPage = perPage ? Number(perPage) : 10;
-    const queryResult = await bookDAO.query(page, perPage, query);
+    const queryResult = await bookDAO.getByQuery(page, perPage, query);
     res.json(queryResult);
   } catch (e) {
     next(e);

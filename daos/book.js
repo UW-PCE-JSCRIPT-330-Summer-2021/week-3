@@ -29,8 +29,8 @@ module.exports.getByQuery = (page, perPage, query) => {
     return Book.find(
       { $text: { $search: query } },
       { score: { $meta: 'textScore' } }
-    ).sort({ score: { $meta: '$textScore' } })
-      .limit(perPage).skip(perPage * page).lean();
+    ).sort({ score: { $meta: 'textScore' } })
+    .limit(perPage).skip(perPage * page).lean();
   } else {
     return Book.find().limit(perPage).skip(perPage * page).lean();
   }
