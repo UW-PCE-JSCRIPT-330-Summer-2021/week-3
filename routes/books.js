@@ -80,8 +80,8 @@ router.get("/search", async (req, res, next) => {
     let { page, perPage, query } = req.query;
     page = page ? Number(page): 0;
     perPage = perPage ? Number(perPage) : 10;
-    const users = await bookDAO.searchQuery(page, perPage, query);
-    res.json(users);
+    const books = await bookDAO.searchQuery(page, perPage, query);
+    res.json(books);
     }
     catch (e) {
       next(e)
@@ -91,7 +91,7 @@ router.get("/search", async (req, res, next) => {
 //AuthorId
 router.get("/authors/stats", async (req, res, next) => {
   try {
-    let (page, perPage, author)
+    let (page, perPage, authorInfo)
   }
 })
 
