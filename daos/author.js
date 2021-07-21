@@ -39,7 +39,7 @@ module.exports.create = async (authorData) => {
     if (e.message.includes('validation failed')) {
       throw new BadDataError(e.message);
     }
-    throw e;
+    throw (e);
   }
 }
 
