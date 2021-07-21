@@ -12,9 +12,12 @@ module.exports.getBooksByAuthorId = (authorId, page, perPage) => {
   return Book.find({ authorId } ).limit(perPage).skip(perPage*page).lean();
 }
 
-module.exports.getStatsByAuthor = (authorInfo, page, perPage) => {
+module.exports.getStatsByAuthor = (authorInfo) => {
   if(authorInfo) {
     return Book.aggregate([
+      {
+        $match: { authorId: "$authorId" }
+      },
       {
         $lookup:
         {
@@ -34,7 +37,7 @@ module.exports.getStatsByAuthor = (authorInfo, page, perPage) => {
           titles: { $push: "$title"}
         }
       }
-    ]).limit(perPage).skip(perPage*page);
+    ]);
   } else {
     return Book.aggregate([
       {
@@ -46,7 +49,7 @@ module.exports.getStatsByAuthor = (authorInfo, page, perPage) => {
           titles: { $push: "$title"}
         }
       }
-    ]).limit(perPage).skip(perPage*page);
+    ]);
   }
 }
 
@@ -86,11 +89,10 @@ module.exports.create = async (bookData) => {
 }
 
 module.exports.search = (query, page, perPage) => {
-  
-  console.log(`>> ${query}`);
-
   return Book.find(
-    { $text: { $search: query }}
+    { $text: { $search: query }},
+    {score: {$meta: "textScore"}}
+  ).sort({score: {$meta: "textScore" }}
   ).limit(perPage).skip(perPage*page).lean();
 }
 
