@@ -26,7 +26,6 @@ router.get("/search", async (req, res, next) => {
   let { page, perPage, query } = req.query;
   page = page ? Number(page) : 0;
   perPage = perPage ? Number(perPage) : 10;
-  console.log("get /search");
   const books = await bookDAO.search(page, perPage, query);
   res.json(books);
 });
@@ -42,18 +41,21 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Read - all books
-//add query to author id
-//add index to author id
-//search text
 router.get("/", async (req, res, next) => {
   let { page, perPage, authorId } = req.query;
   page = page ? Number(page) : 0;
   perPage = perPage ? Number(perPage) : 10;
-  console.log("get /");
   const books = await bookDAO.getAll(page, perPage, authorId);
   res.json(books);
 });
 
+router.get("/authors/stats", async (req, res, next) => {
+  let { page, perPage, authorInfo } = req.query;
+  page = page ? Number(page) : 0;
+  perPage = perPage ? Number(perPage) : 10;
+  const books = await bookDAO.getStats(page, perPage, authorInfo);
+  res.json(books);
+});
 
 // Update
 router.put("/:id", async (req, res, next) => {

@@ -5,20 +5,34 @@ const Book = require('../models/book');
 module.exports = {};
 
 module.exports.search = (page, perPage, query) => {
-    return Book.find(
-      { $text: { $search: query } },
-      { score: { $meta: 'textScore' } }
-    ).sort({ score: { $meta: 'textScore' } })
-      .limit(perPage).skip(perPage * page).lean()
+  return Book.find(
+    { $text: { $search: query } },
+    { score: { $meta: 'textScore' } }
+  ).sort({ score: { $meta: 'textScore' } })
+    .limit(perPage).skip(perPage * page).lean()
 }
 
 module.exports.getAll = (page, perPage, authorId) => {
-  if (authorId) { 
+  if (authorId) {
     return Book.find(
-      {authorId: mongoose.Types.ObjectId(authorId)}
+      { authorId: mongoose.Types.ObjectId(authorId) }
     ).limit(perPage).skip(perPage * page).lean()
   } else {
-  return Book.find().limit(perPage).skip(perPage*page).lean();
+    return Book.find().limit(perPage).skip(perPage * page).lean();
+  }
+}
+
+module.exports.getStats = (page, perPage, authorInfo) => {
+  if (authorInfo) {
+    return Book.find(
+      { authorId: mongoose.Types.ObjectId(authorInfo) }
+    ).limit(perPage).skip(perPage * page).lean()
+  } else {
+    return Book.aggregate([
+      {
+        $group: { _id: "$authorId", numBooks: { $sum: 1 }, averagePageCount: { $avg: "$pageCount" } },
+      },
+    ]);
   }
 }
 
@@ -57,5 +71,5 @@ module.exports.create = async (bookData) => {
   }
 }
 
-class BadDataError extends Error {};
+class BadDataError extends Error { };
 module.exports.BadDataError = BadDataError;
