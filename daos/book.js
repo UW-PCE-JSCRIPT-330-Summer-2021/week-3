@@ -8,38 +8,44 @@ module.exports.getAll = (page, perPage) => {
   return Book.find().limit(perPage).skip(perPage*page).lean();
 }
 
-module.exports.getAllByAuthor = (authorId, page, perPage) => {
-  return Book.find({authorId}).limit(perPage).skip(perPage*page).lean();
+module.exports.getBooksByAuthorId = (authorId, page, perPage) => {
+  return Book.find({ authorId } ).limit(perPage).skip(perPage*page).lean();
 }
 
-module.exports.getStatusByAuthor = (authorInfo, page, perPage) => {
+module.exports.getStatsByAuthor = (authorInfo, page, perPage) => {
   if(authorInfo) {
     return Book.aggregate([
-      { $lookup: { from: "authors", localField: "authorId", foreignField: "_id", as: "author" }},
+      {
+        $lookup:
+        {
+          from: "authors",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "author"
+        }
+      },
       { $unwind: "$author"},
-      { $group: {
-        author: {$first: "$author"},
-        _id: "$authorId",
-        avgPageCount: { $avg: "$pageCount"},
-        countBooks: { $sum: 1 },
-        titles: { $push: "$title"},
-        author: { $push: "$author"}
-      }},
-      { "$project": {
-        _id: 0
-      }}
+      {
+        $group:
+        {
+          _id: "$authorId",
+          averagePageCount: { $avg: "$pageCount"},
+          numBooks: { $sum: 1 },
+          titles: { $push: "$title"}
+        }
+      }
     ]).limit(perPage).skip(perPage*page);
   } else {
     return Book.aggregate([
-      { $group: {
-        _id: "$authorId",
-        avgPageCount: { $avg: "$pageCount"},
-        countBooks: { $sum: 1},
-        titles: { $push: "$title"}
-      }},
-      { $project: {
-        _id: 0
-      }}
+      {
+        $group:
+        {
+          _id: "$authorId",
+          averagePageCount: { $avg: "$pageCount"},
+          numBooks: { $sum: 1},
+          titles: { $push: "$title"}
+        }
+      }
     ]).limit(perPage).skip(perPage*page);
   }
 }
@@ -80,11 +86,12 @@ module.exports.create = async (bookData) => {
 }
 
 module.exports.search = (query, page, perPage) => {
+  
+  console.log(`>> ${query}`);
+
   return Book.find(
-    { $text: {$search: query }},
-    { score: {$meta: 'textScore' }},
-  ).sort( {score: {$meta: 'textScore' }}
-  ).limit(perPage).skip(perPage*page).lean()
+    { $text: { $search: query }}
+  ).limit(perPage).skip(perPage*page).lean();
 }
 
 class BadDataError extends Error {};
