@@ -1,19 +1,29 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const Book = require('../models/book');
+const Book = require("../models/book");
 
 module.exports = {};
 
 module.exports.getAll = (page, perPage) => {
-  return Book.find().limit(perPage).skip(perPage*page).lean();
-}
+  return Book.find()
+    .limit(perPage)
+    .skip(perPage * page)
+    .lean();
+};
+
+module.exports.getAllFromAuthorId = (page, perPage, authorId) => {
+  return Book.find({ authorId: authorId })
+    .limit(perPage)
+    .skip(perPage * page)
+    .lean();
+};
 
 module.exports.getById = (bookId) => {
   if (!mongoose.Types.ObjectId.isValid(bookId)) {
     return null;
   }
   return Book.findOne({ _id: bookId }).lean();
-}
+};
 
 module.exports.deleteById = async (bookId) => {
   if (!mongoose.Types.ObjectId.isValid(bookId)) {
@@ -21,7 +31,7 @@ module.exports.deleteById = async (bookId) => {
   }
   await Book.deleteOne({ _id: bookId });
   return true;
-}
+};
 
 module.exports.updateById = async (bookId, newObj) => {
   if (!mongoose.Types.ObjectId.isValid(bookId)) {
@@ -29,19 +39,94 @@ module.exports.updateById = async (bookId, newObj) => {
   }
   await Book.updateOne({ _id: bookId }, newObj);
   return true;
-}
+};
 
 module.exports.create = async (bookData) => {
   try {
     const created = await Book.create(bookData);
     return created;
   } catch (e) {
-    if (e.message.includes('validation failed')) {
+    if (e.message.includes("validation failed")) {
       throw new BadDataError(e.message);
     }
     throw e;
   }
-}
+};
 
-class BadDataError extends Error {};
+module.exports.search = (page, perPage, query) => {
+  if (query) {
+    return Book.find(
+      { $text: { $search: query } },
+      { score: { $meta: "textScore" } }
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .limit(perPage)
+      .skip(perPage * page)
+      .lean();
+  } else {
+    return Book.find()
+      .limit(perPage)
+      .skip(perPage * page)
+      .lean();
+  }
+};
+
+module.exports.authorStats = (page, perPage, authroInfo) => {
+  // authorId: savedAuthors[0]._id,
+  // averagePageCount: 390.5,
+  // numBooks: 2,
+  // titles: [testBooks[0].title, testBooks[1].title]
+
+  if (authroInfo) {
+    return Book.aggregate([
+      {
+        $lookup: {
+          from: "authors",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "author",
+        },
+      },
+      { $unwind: "$author" },
+      {
+        $group: {
+          _id: "$authorId",
+          author: { $first: "$author" },
+          authorId: { $first: "$authorId" },
+          averagePageCount: { $avg: "$pageCount" },
+          numBooks: { $sum: 1 },
+          titles: { $push: "$title" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ])
+      .limit(perPage)
+      .skip(perPage * page);
+  } else {
+    return Book.aggregate([
+      {
+        $group: {
+          _id: "$authorId",
+          authorId: { $first: "$authorId" },
+          averagePageCount: { $avg: "$pageCount" },
+          numBooks: { $sum: 1 },
+          titles: { $push: "$title" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ])
+      .limit(perPage)
+      .skip(perPage * page);
+  }
+};
+
+class BadDataError extends Error {}
 module.exports.BadDataError = BadDataError;

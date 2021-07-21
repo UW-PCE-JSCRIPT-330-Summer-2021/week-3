@@ -8,6 +8,11 @@
     "test": "jest --coverage --runInBand",
     "tdd": "jest --watch --runInBand"
   },
+  "config": {
+    "mongodbMemoryServer": {
+      "arch": "x64"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/UW-PCE-JSCRIPT-330-Summer-2021/week-3.git"
