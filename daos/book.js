@@ -1,3 +1,5 @@
+//REFERRED BACK TO LECTURE VIDEO FOR LECTURE EXAMPLES
+
 const mongoose = require('mongoose');
 
 const Book = require('../models/book');
@@ -6,6 +8,70 @@ module.exports = {};
 
 module.exports.getAll = (page, perPage) => {
   return Book.find().limit(perPage).skip(perPage*page).lean();
+}
+
+//DAO for search
+module.exports.searchQuery = (page, perPage, query) => {
+  if (query) {
+    return Book.find(
+      { $text: { $search: query } },
+      { score: { $meta: 'textScore' } }).
+      sort( { score: { $meta: '$textScore' } }).
+      limit(perPage).skipPage(perPage*page).lean()
+  }
+
+  else {
+    return Book.find().limit(perPage.skip(perPage*page).lean();
+  }
+}
+
+//DAO for AuthorID
+module.exports.getAuthorId = (authorId) => {
+  if (!mongoose.Types.ObjectId.isValid(authorId)) {
+    return null;
+  }
+  return Book.find( { authorId: authorId }).lean();
+}
+
+//DAO for AuthorStats
+//Aggregation
+module.exports.getAuthorStats = (authorStat, page, perPage) => {
+  if (authorStat) {
+    return Book.aggregate([
+      { $lookup: {
+        from: 'authors',
+        localField: 'authorId',
+        foreignField: '_id',
+        as: 'author'
+      } },
+      { $unwind: '$author'},
+      { $group: {
+        _id: '$authorId',
+        author: { $first: '$author' },
+        authorId: { $first: '$authorId' },
+        averagePageCount: { $avg: '$pageCount' },
+        numBooks: { $sum: 1 },
+        titles: { $push: '$title' }
+      } },
+      { $project: { _id: 0
+      } }
+    ]).limit(perPage).skip(perPage*page);
+  }
+
+  else {
+    return Book.aggregate([
+      { $group: {
+        _id: '$authorId',
+        author: { $first: '$author' },
+        authorId: { $first: '$authorId' },
+        averagePageCount: { $avg: '$pageCount' },
+        numBooks: { $sum: 1 },
+        titles: { $push: '$title' }
+      } },
+      { $project: { _id: 0
+      } }
+    ]).limit(perPage).skip(perPage*page);
+  }
 }
 
 module.exports.getById = (bookId) => {

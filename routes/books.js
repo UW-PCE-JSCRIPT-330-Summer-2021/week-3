@@ -1,3 +1,5 @@
+//REFERRED BACK TO LECTURE VIDEO FOR LECTURE EXAMPLES
+
 const { Router } = require("express");
 const router = Router();
 
@@ -71,5 +73,27 @@ router.delete("/:id", async (req, res, next) => {
     res.status(500).send(e.message);
   }
 });
+
+//Search
+router.get("/search", async (req, res, next) => {
+  try {
+    let { page, perPage, query } = req.query;
+    page = page ? Number(page): 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const users = await bookDAO.searchQuery(page, perPage, query);
+    res.json(users);
+    }
+    catch (e) {
+      next(e)
+    }
+})
+
+//AuthorId
+router.get("/authors/stats", async (req, res, next) => {
+  try {
+    let (page, perPage, author)
+  }
+})
+
 
 module.exports = router;
