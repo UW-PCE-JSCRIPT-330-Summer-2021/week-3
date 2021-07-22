@@ -8,7 +8,8 @@ module.exports.search = (page, perPage, query) => {
   return Book.find(
     { $text: { $search: query } },
     { score: { $meta: 'textScore' } }
-  ).sort({ score: { $meta: 'textScore' } })
+  )
+    .sort({ score: { $meta: 'textScore' } })
     .limit(perPage).skip(perPage * page).lean()
 }
 
