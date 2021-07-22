@@ -24,14 +24,24 @@ module.exports.getAll = (page, perPage, authorId) => {
 
 module.exports.getStats = (page, perPage, authorInfo) => {
   if (authorInfo) {
-    return Book.find(
-      { authorId: mongoose.Types.ObjectId(authorInfo) }
-    ).limit(perPage).skip(perPage * page).lean()
+    return Book.aggregate([
+      {
+        $lookup: {from: "authors", localField: "authorId", foreignField: "_id", as: "author"}
+      },
+      { $unwind: '$author'},
+      {
+        $group: {_id: "$authorId", numBooks: { $sum: 1 }, authorId: { $first: "$authorId" },
+          averagePageCount: { $avg: "$pageCount" }, titles: { $push: "$title" }, author: { $first: "$author" }}
+      },
+      { $project: { _id: 0, } },
+    ]);
   } else {
     return Book.aggregate([
       {
-        $group: { _id: "$authorId", numBooks: { $sum: 1 }, averagePageCount: { $avg: "$pageCount" } },
+        $group: {_id: "$authorId", numBooks: { $sum: 1 }, authorId: { $first: "$authorId" },
+          averagePageCount: { $avg: "$pageCount" }, titles: { $push: "$title" }}
       },
+      { $project: { _id: 0, } },
     ]);
   }
 }
