@@ -123,6 +123,7 @@ describe("/books", () => {
       book._id = savedBooks[index]._id.toString();
     });
   });
+
   afterEach(testUtils.clearDB);
 
   describe("GET /", () => {
@@ -181,7 +182,7 @@ describe("/books", () => {
         expect(res.body).toMatchObject([
           testBooks.find(book => book.title === 'The Way of Kings'),
           testBooks.find(book => book.title === 'The Fifth Season'),
-          testBooks.find(book => book.title === 'The Obelisk Gate'),
+          testBooks.find(book => book.title === 'The Obelisk Gate'), 
           testBooks.find(book => book.title === 'The Stone Sky'),
           testBooks.find(book => book.title === 'Steelheart'),
         ]);
