@@ -40,7 +40,7 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-// Read - all books
+// Read
 router.get("/", async (req, res, next) => {
   let { page, perPage, authorId } = req.query;
   page = page ? Number(page) : 0;
