@@ -35,7 +35,7 @@ module.exports.getStats = (page, perPage, authorInfo) => {
           averagePageCount: { $avg: "$pageCount" }, titles: { $push: "$title" }, author: { $first: "$author" }}
       },
       { $project: { _id: 0, } },
-    ]);
+    ]).limit(perPage).skip(perPage * page);
   } else {
     return Book.aggregate([
       {
@@ -43,7 +43,7 @@ module.exports.getStats = (page, perPage, authorInfo) => {
           averagePageCount: { $avg: "$pageCount" }, titles: { $push: "$title" }}
       },
       { $project: { _id: 0, } },
-    ]);
+    ]).limit(perPage).skip(perPage * page);
   }
 }
 
