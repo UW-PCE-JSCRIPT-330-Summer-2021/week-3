@@ -1,12 +1,24 @@
 const { Router } = require("express");
 const router = Router();
-
 const bookDAO = require('../daos/book');
+
+// Read/Search - match
+router.get("/search", async (req, res, next) => {
+  try {
+    let { page, perPage, query } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const books = await bookDAO.search(page, perPage, query);
+    res.json(books);
+  } catch (e) {
+    next(e)
+  }
+});
 
 // Create
 router.post("/", async (req, res, next) => {
   const book = req.body;
-  if (!book || JSON.stringify(book) === '{}' ) {
+  if (!book || JSON.stringify(book) === '{}') {
     res.status(400).send('book is required');
   } else {
     try {
@@ -32,13 +44,30 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-// Read - all books
+// Read - all books / author query
 router.get("/", async (req, res, next) => {
-  let { page, perPage } = req.query;
-  page = page ? Number(page) : 0;
-  perPage = perPage ? Number(perPage) : 10;
-  const books = await bookDAO.getAll(page, perPage);
-  res.json(books);
+  try {
+    let { page, perPage, authorId } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const books = await bookDAO.getAll(page, perPage, authorId);
+    res.json(books);
+  } catch (e) {
+      next(e)
+    }
+});
+
+// Read - Author Info
+router.get("/authors/stats", async (req, res, next) => {
+  try {
+    let { page, perPage, authorInfo } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const books = await bookDAO.getAuthorInfo(page, perPage, authorInfo);
+    res.json(books);
+  } catch (e) {
+    next(e)
+  }
 });
 
 // Update
@@ -56,6 +85,7 @@ router.put("/:id", async (req, res, next) => {
         res.status(400).send(e.message);
       } else {
         res.status(500).send(e.message);
+        next(e)
       }
     }
   }
@@ -69,6 +99,7 @@ router.delete("/:id", async (req, res, next) => {
     res.sendStatus(success ? 200 : 400);
   } catch(e) {
     res.status(500).send(e.message);
+    next(e)
   }
 });
 
