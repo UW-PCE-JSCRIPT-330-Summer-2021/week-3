@@ -4,8 +4,8 @@ const Book = require('../models/book');
 
 module.exports = {};
 
-module.exports.getAll = async (authorId, page, perPage) => {
-  if (authorId === 'true') {
+module.exports.getAll = async (page, perPage, authorId) => {
+  if (authorId) {
     return Book.find({ authorId: authorId }).limit(perPage).skip(perPage*page).lean();
   } else {
   return Book.find().limit(perPage).skip(perPage*page).lean();
@@ -18,8 +18,21 @@ module.exports.getById = async (bookId) => {
   return Book.findOne({ _id: bookId }).lean();
 };
 
-module.exports.getAuthorInfo = async (authorId, page, perPage) => {
-  if (authorId) {
+module.exports.search = async (page, perPage, query) => {
+  if (query) {
+    return Book.find(
+      { $text: { $search: query }},
+      { score: { $meta: 'textScore' }},
+    ).sort(
+      { score: { $meta: 'textScore' }}
+    ).limit(perPage).skip(perPage*page).lean();
+  } else {
+    return Book.find().limit(perPage).skip(perPage*page).lean();
+  }
+};
+
+module.exports.getAuthorInfo = async (page, perPage, authorId) => {
+  if (authorId === 'true') {
     return Book.aggregate([
       { $lookup: {
         from: 'authors',
@@ -45,25 +58,14 @@ module.exports.getAuthorInfo = async (authorId, page, perPage) => {
       { $group: {
         _id: '$authorId',
         authorId: { $first: '$authorId' },
-        averagePageCount: { $avg: '$pageCount '},
+        averagePageCount: { $avg: '$pageCount' },
         numBooks: { $sum: 1 },
         titles: { $push: '$title' },
       } },
-      { $project: { _id: 0 }},
+      { $project: { 
+        _id: 0 
+      }},
     ]).limit(perPage).skip(perPage*page);
-  }
-};
-
-module.exports.search = async (query, page, perPage) => {
-  if (query) {
-    return Book.find(
-      { $text: { $search: query }},
-      { score: { $meta: 'textScore' }},
-    ).sort(
-      { score: { $meta: 'textScore' }}
-    ).limit(perPage).skip(perPage*page).lean();
-  } else {
-    return Book.find().limit(perPage).skip(perPage*page).lean();
   }
 };
 
@@ -88,7 +90,7 @@ module.exports.create = async (bookData) => {
     const created = await Book.create(bookData);
     return created;
   } catch (e) {
-    if (e.message.includes('validation failed')) {
+    if (e.message.includes('validation failed') || ('duplicate key')) {
       throw new BadDataError(e.message);
     }
     throw(e);

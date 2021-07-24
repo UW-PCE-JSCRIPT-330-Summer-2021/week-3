@@ -1,12 +1,11 @@
 const { Router } = require("express");
 const router = Router();
-
 const authorDAO = require('../daos/author');
 
 // Create
 router.post("/", async (req, res, next) => {
   const author = req.body;
-  if (!author || JSON.stringify(author) === '{}' ) {
+  if (!author || JSON.stringify(author) === '{}') {
     res.status(400).send('author is required');
   } else {
     try {
