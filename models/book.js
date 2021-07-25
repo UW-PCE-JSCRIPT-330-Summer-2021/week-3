@@ -12,6 +12,6 @@ const bookSchema = new mongoose.Schema({
   pageCount: { type: Number, required: true }
 });
 
-bookSchema.index({ genre: 'text', blurb: 'text' })
+bookSchema.index({ title: 'text', genre: 'text', blurb: 'text' });
 
 module.exports = mongoose.model("books", bookSchema);
