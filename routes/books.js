@@ -35,10 +35,10 @@ router.get("/:id", async (req, res, next) => {
       let { page, perPage, query } = req.query;
       page = page ? Number(page) : 0;
       perPage = perPage ? Number(perPage) : 10;
-      query = { $text: { $search: "Fantasy and Kings" } }; 
+      query = { $text: { $search: req.query.query } }; 
       const bookScore = { score: { $meta: "textScore" } };
       const bookSort = { score: { $meta: "textScore" } };
-      console.log(query);
+      // console.log(query);
       const bookSearch = await bookDAO.getAll(page, perPage, query, bookScore, bookSort);
       res.json(bookSearch);
     }
