@@ -12,7 +12,7 @@ const bookSchema = new mongoose.Schema({
   pageCount: { type: Number, required: true }
 });
 
-bookSchema.index({ title: "text", genre: "text", subject: "text" });
+bookSchema.index({ title: "text", blurb: "text", genre: "text", subject: "text" });
 bookSchema.index({authorId: 1});
 bookSchema.index({ISBN: 1}, {unique: true});
 

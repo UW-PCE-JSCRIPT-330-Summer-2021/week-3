@@ -157,7 +157,7 @@ describe("/books", () => {
     });
 
     describe("GET /search", () => {
-/*       it("should return one matching book", async () => {
+      it("should return one matching book", async () => {
         const searchTerm = 'Superhero'
         const res = await request(server).get("/books/search?query=" + encodeURI(searchTerm));
         expect(res.statusCode).toEqual(200);
@@ -173,7 +173,7 @@ describe("/books", () => {
           testBooks.find(book => book.title === "Go Tell It on the Mountain"),
           testBooks.find(book => book.title === "If Beale Street Could Talk"),
         ]);
-      }); */
+      });
       it("should return multipe matching books sorted by best mutliple terms", async () => {
         const searchTerm = 'Fantasy and Kings'
         const res = await request(server).get("/books/search?query=" + encodeURI(searchTerm));
