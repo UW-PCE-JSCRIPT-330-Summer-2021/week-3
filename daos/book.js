@@ -4,8 +4,8 @@ const Book = require('../models/book');
 
 module.exports = {};
 
-module.exports.getAll = (page, perPage) => {
-  return Book.find().limit(perPage).skip(perPage*page).lean();
+module.exports.getAll = (page, perPage, query, bookScore, bookSort) => {
+  return Book.find(query, bookScore).sort(bookSort).limit(perPage).skip(perPage*page).lean();
 }
 
 module.exports.getById = (bookId) => {
@@ -21,6 +21,10 @@ module.exports.deleteById = async (bookId) => {
   }
   await Book.deleteOne({ _id: bookId });
   return true;
+}
+
+module.exports.getByIsbn = (isbnId) => {
+  return Book.findOne({ ISBN: isbnId }).lean();
 }
 
 module.exports.updateById = async (bookId, newObj) => {
