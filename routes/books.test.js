@@ -216,7 +216,7 @@ describe("/books", () => {
           numBooks: 2,
           titles: [testBooks[8].title, testBooks[9].title]
         });
-      });  /*
+      });  
       describe("with authorInfo=true", () => {
         it("should return stats by authorId with all author info", async () => {
           const res = await request(server).get("/books/authors/stats?authorInfo=true");
@@ -250,7 +250,7 @@ describe("/books", () => {
             author: savedAuthors[3]
           });
         }); 
-      });*/
+      });
     });
   });
 
