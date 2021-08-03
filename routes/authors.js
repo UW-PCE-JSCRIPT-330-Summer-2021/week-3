@@ -26,7 +26,7 @@ router.post("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   const author = await authorDAO.getById(req.params.id);
   if (author) {
-    res.json(author);
+    res.json(author);    
   } else {
     res.sendStatus(404);
   }

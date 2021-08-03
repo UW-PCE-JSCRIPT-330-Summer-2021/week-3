@@ -1,11 +1,12 @@
+const { query } = require('express');
 const mongoose = require('mongoose');
 
 const Book = require('../models/book');
 
 module.exports = {};
 
-module.exports.getAll = (page, perPage) => {
-  return Book.find().limit(perPage).skip(perPage*page).lean();
+module.exports.getAll = (page, perPage, query, bookScore, bookSort) => {
+  return Book.find(query, bookScore).sort(bookSort).limit(perPage).skip(perPage*page).lean();
 }
 
 module.exports.getById = (bookId) => {
@@ -21,6 +22,44 @@ module.exports.deleteById = async (bookId) => {
   }
   await Book.deleteOne({ _id: bookId });
   return true;
+}
+
+module.exports.getByIsbn = (isbnId) => {
+  return Book.findOne({ ISBN: isbnId }).lean();
+}
+
+module.exports.getStats = (authorInfo) => {
+  let group = { $group: {
+      _id: '$authorId', 
+      titles: { $push: '$title' }, 
+      numBooks: { $sum: 1 }, 
+      averagePageCount: { $avg: '$pageCount' }
+    }
+  };
+  let project = { $project: { 
+    _id: 0, 
+    author: 1,
+    authorId: "$_id",
+    averagePageCount: 1,
+    numBooks: 1,
+    titles: 1,
+    }
+  };
+
+  let lookup;
+  let query = [group, project];  
+
+  if (authorInfo) {
+    lookup = { $lookup: {
+      from: 'authors',       
+      localField: 'authorId',       
+      foreignField: '_id',       
+      as: 'author'}
+    };
+    query.push(lookup);
+    query.push({ $unwind: '$author'});
+  }
+  return Book.aggregate(query);
 }
 
 module.exports.updateById = async (bookId, newObj) => {

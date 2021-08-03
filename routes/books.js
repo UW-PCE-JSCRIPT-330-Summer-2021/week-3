@@ -8,6 +8,8 @@ router.post("/", async (req, res, next) => {
   const book = req.body;
   if (!book || JSON.stringify(book) === '{}' ) {
     res.status(400).send('book is required');
+  } else if (await bookDAO.getByIsbn({...book}.ISBN)){
+    res.status(400).send("ISBN already exists");
   } else {
     try {
       const savedBook = await bookDAO.create(book);
@@ -27,19 +29,82 @@ router.get("/:id", async (req, res, next) => {
   const book = await bookDAO.getById(req.params.id);
   if (book) {
     res.json(book);
-  } else {
+  } else if (req.params.id == "search") {   
+    try {
+      let { page, perPage, query } = req.query;
+      page = page ? Number(page) : 0;
+      perPage = perPage ? Number(perPage) : 10;
+      query = { $text: { $search: req.query.query } }; 
+      const bookScore = { score: { $meta: "textScore" } };
+      const bookSearch = await bookDAO.getAll(page, perPage, query, bookScore, bookScore);
+      res.json(bookSearch);
+    }
+    catch(e) {
+      console.log(e);
+      if (e instanceof bookDAO.BadDataError) {
+        res.status(400).send(e.message);
+      } else {
+        res.status(500).send(e.message);
+      }
+    }
+  } else {   
     res.sendStatus(404);
   }
 });
 
 // Read - all books
 router.get("/", async (req, res, next) => {
-  let { page, perPage } = req.query;
-  page = page ? Number(page) : 0;
-  perPage = perPage ? Number(perPage) : 10;
-  const books = await bookDAO.getAll(page, perPage);
-  res.json(books);
+  try {
+    let { page, perPage } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const books = await bookDAO.getAll(page, perPage, req.query);
+    res.json(books);
+  }
+  catch(e) {
+    if (e instanceof bookDAO.BadDataError) {
+      res.status(400).send(e.message);
+    } else {
+      res.status(500).send(e.message);
+    }
+    
+  }
 });
+
+router.get("/authors/stats", async (req, res, next) => {
+  try {
+    let { authorInfo } = req.query;
+    const authorStats = await bookDAO.getStats(authorInfo);
+    res.json(authorStats );
+  }
+  catch(e) {
+    if (e instanceof bookDAO.BadDataError) {
+      res.status(400).send(e.message);
+    } else {
+      res.status(500).send(e.message);
+    }
+  }
+});
+
+// Search term
+ router.get("/:id/search", async (req, res, next) => {
+  try {
+    let { page, perPage, query } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    query = {title: query};
+    const books = await bookDAO.getAll(page, perPage, query);
+    res.json(books);
+  }
+  catch(e) {
+    if (e instanceof bookDAO.BadDataError) {
+      res.status(400).send(e.message);
+    } else {
+      res.status(500).send(e.message);
+    }
+    
+  }
+}); 
 
 // Update
 router.put("/:id", async (req, res, next) => {

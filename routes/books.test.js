@@ -125,7 +125,7 @@ describe("/books", () => {
   });
   afterEach(testUtils.clearDB);
 
-  describe("GET /", () => {
+   describe("GET /", () => {
     it("should return all books", async () => {
       const res = await request(server).get("/books");
       expect(res.statusCode).toEqual(200);
@@ -186,10 +186,10 @@ describe("/books", () => {
           testBooks.find(book => book.title === 'Steelheart'),
         ]);
       });
-    });
+    }); 
 
     describe("/authors/stats", () => {
-      it("should return stats by authorId", async () => {
+       it("should return stats by authorId", async () => {
         const res = await request(server).get("/books/authors/stats");
         expect(res.statusCode).toEqual(200);
         expect(res.body).toContainEqual({
@@ -216,7 +216,7 @@ describe("/books", () => {
           numBooks: 2,
           titles: [testBooks[8].title, testBooks[9].title]
         });
-      });
+      });  
       describe("with authorInfo=true", () => {
         it("should return stats by authorId with all author info", async () => {
           const res = await request(server).get("/books/authors/stats?authorInfo=true");
@@ -249,7 +249,7 @@ describe("/books", () => {
             titles: [testBooks[8].title, testBooks[9].title],
             author: savedAuthors[3]
           });
-        });
+        }); 
       });
     });
   });
