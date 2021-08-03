@@ -13,7 +13,7 @@ const bookSchema = new mongoose.Schema({
 });
 
 bookSchema.index({ title: "text", blurb: "text", genre: "text", subject: "text" });
-bookSchema.index({authorId: 1});
-bookSchema.index({ISBN: 1}, {unique: true});
+bookSchema.index({ authorId: 1});
+bookSchema.index({ ISBN: 1}, { unique: true});
 
 module.exports = mongoose.model("books", bookSchema);

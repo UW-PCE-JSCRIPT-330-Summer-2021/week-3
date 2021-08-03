@@ -125,8 +125,8 @@ describe("/books", () => {
   });
   afterEach(testUtils.clearDB);
 
-  describe("GET /", () => {
-    it("should return all books", async () => {
+   describe("GET /", () => {
+/*     it("should return all books", async () => {
       const res = await request(server).get("/books");
       expect(res.statusCode).toEqual(200);
       testBooks.forEach(book => {
@@ -134,9 +134,9 @@ describe("/books", () => {
           expect.objectContaining(book)
         )
       })
-    });
+    }); */
 
-    describe("with an authorId query parameter", () => {
+    /* describe("with an authorId query parameter", () => {
       it("should return books just for that author", async () => {
         const authorId = savedAuthors[1]._id;
         const res = await request(server).get("/books?authorId=" + authorId);
@@ -186,10 +186,10 @@ describe("/books", () => {
           testBooks.find(book => book.title === 'Steelheart'),
         ]);
       });
-    });
-/* 
+    });  */
+
     describe("/authors/stats", () => {
-      it("should return stats by authorId", async () => {
+       it("should return stats by authorId", async () => {
         const res = await request(server).get("/books/authors/stats");
         expect(res.statusCode).toEqual(200);
         expect(res.body).toContainEqual({
@@ -216,7 +216,7 @@ describe("/books", () => {
           numBooks: 2,
           titles: [testBooks[8].title, testBooks[9].title]
         });
-      });
+      });  /*
       describe("with authorInfo=true", () => {
         it("should return stats by authorId with all author info", async () => {
           const res = await request(server).get("/books/authors/stats?authorInfo=true");
@@ -250,11 +250,11 @@ describe("/books", () => {
             author: savedAuthors[3]
           });
         }); 
-      });
-    });*/
+      });*/
+    });
   });
 
-  describe("GET /:id", () => {
+  /* describe("GET /:id", () => {
     it("should return 404 if no matching id", async () => {
       const res = await request(server).get("/books/id1");
       expect(res.statusCode).toEqual(404);
@@ -265,7 +265,7 @@ describe("/books", () => {
       expect(res.statusCode).toEqual(200);
       expect(res.body).toMatchObject(book);
     })
-  });
+  }); */
 
   describe("POST /", () => {
     it("should reject a book with an empty body", async () => {

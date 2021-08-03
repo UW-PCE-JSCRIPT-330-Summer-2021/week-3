@@ -6,6 +6,7 @@ const bookDAO = require('../daos/book');
 // Create
 router.post("/", async (req, res, next) => {
   const book = req.body;
+  // console.log(req.params);
   if (!book || JSON.stringify(book) === '{}' ) {
     res.status(400).send('book is required');
   } else if (await bookDAO.getByIsbn({...book}.ISBN)){
@@ -27,6 +28,7 @@ router.post("/", async (req, res, next) => {
 
 // Read - single book
 router.get("/:id", async (req, res, next) => {
+  // console.log(req.body)
   const book = await bookDAO.getById(req.params.id);
   if (book) {
     res.json(book);
@@ -37,9 +39,9 @@ router.get("/:id", async (req, res, next) => {
       perPage = perPage ? Number(perPage) : 10;
       query = { $text: { $search: req.query.query } }; 
       const bookScore = { score: { $meta: "textScore" } };
-      const bookSort = { score: { $meta: "textScore" } };
+      // const bookSort = { score: { $meta: "textScore" } };
       // console.log(query);
-      const bookSearch = await bookDAO.getAll(page, perPage, query, bookScore, bookSort);
+      const bookSearch = await bookDAO.getAll(page, perPage, query, bookScore, bookScore);
       res.json(bookSearch);
     }
     catch(e) {
@@ -58,6 +60,7 @@ router.get("/:id", async (req, res, next) => {
 // Read - all books
 router.get("/", async (req, res, next) => {
   try {
+    console.log(req.params);
     let { page, perPage } = req.query;
     page = page ? Number(page) : 0;
     perPage = perPage ? Number(perPage) : 10;
@@ -72,6 +75,25 @@ router.get("/", async (req, res, next) => {
       res.status(500).send(e.message);
     }
     
+  }
+});
+
+router.get("/authors/stats", async (req, res, next) => {
+  try {
+    let { authorInfo } = req.query;
+    console.log(req.params.bookId);
+
+    console.log(authorInfo);
+    const authorStats = await bookDAO.getStats(authorInfo);
+    res.json(authorStats );
+  }
+  catch(e) {
+    console.log(e);
+    if (e instanceof bookDAO.BadDataError) {
+      res.status(400).send(e.message);
+    } else {
+      res.status(500).send(e.message);
+    }
   }
 });
 

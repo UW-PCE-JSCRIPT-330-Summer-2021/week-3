@@ -27,6 +27,30 @@ module.exports.getByIsbn = (isbnId) => {
   return Book.findOne({ ISBN: isbnId }).lean();
 }
 
+module.exports.getStats = (authorInfo) => {
+  let getFilter;
+  if (authorInfo) {
+    filter.authorInfo = { authorInfo };
+  }
+  // let updated = Math.ceil(doc.money/num); 
+// },{$set:{"money":updated}}
+  return Book.aggregate([
+    // { $match: getFilter },
+    { $group: {_id: '$authorId', 
+      titles: { $addToSet: '$title' }, numBooks: { $sum: 1 }, 
+              pageCountTotal: { $sum: '$pageCount' }}},
+    { $project: { 
+      _id: 0, 
+      authorId: "$_id",
+      averagePageCount: {$divide :['$pageCountTotal', '$numBooks']},
+      numBooks: 1,
+      titles: 1
+      }
+    }
+  ])
+  // return Author.find(query, authorScore).sort(authorSort).limit(perPage).skip(perPage*page).lean();
+}
+
 module.exports.updateById = async (bookId, newObj) => {
   if (!mongoose.Types.ObjectId.isValid(bookId)) {
     return false;
