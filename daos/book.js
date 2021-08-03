@@ -59,9 +59,7 @@ module.exports.getStats = (authorInfo) => {
     query.push(lookup);
     query.push({ $unwind: '$author'});
   }
-  
   return Book.aggregate(query);
-  // return Author.find(query, authorScore).sort(authorSort).limit(perPage).skip(perPage*page).lean();
 }
 
 module.exports.updateById = async (bookId, newObj) => {

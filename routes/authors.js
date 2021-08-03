@@ -24,7 +24,6 @@ router.post("/", async (req, res, next) => {
 
 // Read - single author
 router.get("/:id", async (req, res, next) => {
-  // console.log(req.url)
   const author = await authorDAO.getById(req.params.id);
   if (author) {
     res.json(author);    
